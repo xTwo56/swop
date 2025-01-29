@@ -1,9 +1,9 @@
 'use client';
 
-import { useBasicProgram } from './basic-data-access'
+import { useSwapProgram } from './swap-data-access'
 
-export function BasicCreate() {
-  const { greet } = useBasicProgram();
+export function SwapCreate() {
+  const { greet } = useSwapProgram();
 
   return (
     <button
@@ -16,8 +16,8 @@ export function BasicCreate() {
   );
 }
 
-export function BasicProgram() {
-  const { getProgramAccount } = useBasicProgram();
+export function SwapProgram() {
+  const { getProgramAccount } = useSwapProgram();
 
   if (getProgramAccount.isLoading) {
     return <span className="loading loading-spinner loading-lg"></span>;
