@@ -27,6 +27,7 @@ export function CreateMint() {
   }
   return (
     <div>
+      <h1>CreateMint</h1>
 
       <input type="text" placeholder='MintAuthorityAddress' value={mintAuthorityAddress}
         className='input input-bordered w-full max-w-xs'
@@ -38,12 +39,12 @@ export function CreateMint() {
 
       <button onClick={handleSumbit}
         disabled={createMintAccount.isPending || !isFormValid}
-        className='btn btn-xs lg: btn-md btn-primary' />
-
+        className='btn btn-xs lg: btn-md btn-primary' >
+        Submit
+      </button>
     </div>
   )
 }
-
 
 export function MintTokens() {
 
@@ -70,6 +71,7 @@ export function MintTokens() {
   }
   return (
     <div>
+      <h2 className="">TokenTransfer</h2>
 
       <input type="text" placeholder='MintAuthorityAddress' value={mintAddress}
         className='input input-bordered w-full max-w-xs'
@@ -81,8 +83,8 @@ export function MintTokens() {
 
       <input type="number" placeholder='amount' value={amount}
         className='input input-bordered w-full max-w-xs'
-        onChange={(e) => setAmount(e.target.value)} />
-      ``
+        onChange={(e) => setAmount(Number(e.target.value))} />
+
       <button onClick={handleSumbit}
         disabled={mintTokens.isPending || !isFormValid}
         className='btn btn-xs lg: btn-md btn-primary' />

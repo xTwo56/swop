@@ -1,12 +1,11 @@
-import { createMint, mintTo } from "@solana/spl-token"
+import { createMint, getMinimumBalanceForRentExemptMint, createInitializeMint2Instruction, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token"
 import { useCluster } from "../cluster/cluster-data-access"
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { PublicKey } from '@solana/web3.js';
-import NodeWallet from "@coral-xyz/anchor/dist/cjs/nodewallet";
+import { Connection, PublicKey } from '@solana/web3.js';
 import { useAnchorProvider } from "../solana/solana-provider";
-const { cluster } = useCluster()
 import { useTransactionToast } from "../ui/ui-layout";
+import { SystemProgram, Keypair, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
 
 export interface CreateMintArgs {
   mintAuthority: PublicKey
@@ -21,20 +20,37 @@ interface MintTokenArgs {
 
 export function useSplMinter() {
 
-  const { connection } = useConnection()
-  const { wallet } = useAnchorProvider()
-  const payer = (wallet as NodeWallet).payer
+  const MINT_SIZE = 82
+  const { cluster } = useCluster()
+  const connection = new Connection(cluster.endpoint)
+  const provider = useAnchorProvider()
+
   const transactionToast = useTransactionToast()
 
   const createMintAccount = useMutation<string, Error, CreateMintArgs>({
 
-    mutationKey: ["createMint", "create", { cluster }],
+    mutationKey: ["Minter", "create", { cluster }],
     mutationFn: async (args: CreateMintArgs) => {
-      const mintPubkey = await createMint(connection, payer, args.mintAuthority, args.freezeAuthority, 9)
-      return mintPubkey.toBase58()
+
+      const mint = Keypair.generate()
+      const lamports = await getMinimumBalanceForRentExemptMint(connection);
+
+      const transaction = new Transaction().add(
+        SystemProgram.createAccount({
+          fromPubkey: provider.wallet.publicKey,
+          newAccountPubkey: mint.publicKey,
+          space: MINT_SIZE,
+          lamports,
+          programId: TOKEN_PROGRAM_ID
+        }),
+        createInitializeMint2Instruction(mint.publicKey, 9, args.mintAuthority, args.freezeAuthority),
+      );
+
+      return await provider.sendAndConfirm(transaction, [mint])
     },
-    onSuccess: (mintAddress) => {
-      transactionToast(mintAddress)
+    onSuccess: (signature) => {
+      transactionToast(signature)
+      console.log(signature)
     },
     onError: (error) => {
       transactionToast(error.message)
@@ -42,17 +58,9 @@ export function useSplMinter() {
   })
 
   const mintTokens = useMutation<string, Error, MintTokenArgs>({
-    mutationKey: ["mintTokens"],
+    mutationKey: ["Minter", "mint", { cluster }],
     mutationFn: async ({ mint, destination, amount }: MintTokenArgs) => {
-      const signature = await mintTo(
-        connection,
-        payer,
-        mint,
-        destination,
-        payer,
-        amount
-      )
-      return signature
+      return setTimeout(() => "hello", 1)
     },
     onSuccess: (signature) => {
       transactionToast(`Tokens Minted! TX: ${signature}`)
@@ -67,7 +75,4 @@ export function useSplMinter() {
     mintTokens
   }
 }
-
-
-
 
