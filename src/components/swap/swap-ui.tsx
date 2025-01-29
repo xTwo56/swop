@@ -3,15 +3,15 @@
 import { useSwapProgram } from './swap-data-access'
 
 export function SwapCreate() {
-  const { greet } = useSwapProgram();
+  const { makeOffer } = useSwapProgram();
 
   return (
     <button
       className="btn btn-xs lg:btn-md btn-primary"
-      onClick={() => greet.mutateAsync()}
-      disabled={greet.isPending}
+      onClick={() => makeOffer.mutateAsync()}
+      disabled={makeOffer.isPending}
     >
-      Run program{greet.isPending && '...'}
+      Run program{makeOffer.isPending && '...'}
     </button>
   );
 }

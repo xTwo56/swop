@@ -1,40 +1,73 @@
-'use client';
-
-import { useConnection } from '@solana/wallet-adapter-react'
+import { createMint, mintTo } from "@solana/spl-token"
+import { useCluster } from "../cluster/cluster-data-access"
 import { useMutation, useQuery } from '@tanstack/react-query'
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { PublicKey } from '@solana/web3.js';
+import NodeWallet from "@coral-xyz/anchor/dist/cjs/nodewallet";
+import { useAnchorProvider } from "../solana/solana-provider";
+const { cluster } = useCluster()
+import { useTransactionToast } from "../ui/ui-layout";
 
-import toast from 'react-hot-toast'
-import { useCluster } from '../cluster/cluster-data-access'
-import { useAnchorProvider } from '../solana/solana-provider'
-import { useTransactionToast } from '../ui/ui-layout'
-import { createMint } from '@solana/spl-token';
+export interface CreateMintArgs {
+  mintAuthority: PublicKey
+  freezeAuthority: PublicKey
+}
 
-export function useSwapProgram() {
-  const { connection } = useConnection();
-  const { cluster } = useCluster();
-  const transactionToast = useTransactionToast();
-  const provider = useAnchorProvider();
+interface MintTokenArgs {
+  mint: PublicKey,
+  destination: PublicKey,
+  amount: number
+}
 
-  const createMint = useMutation({
-    mutationKey: ['spl-minter', 'createMint', { cluster }],
-    mutationFn: () => {
-      const mint = await createMint(
+export function useSplMinter() {
+
+  const { connection } = useConnection()
+  const { wallet } = useAnchorProvider()
+  const payer = (wallet as NodeWallet).payer
+  const transactionToast = useTransactionToast()
+
+  const createMintAccount = useMutation<string, Error, CreateMintArgs>({
+
+    mutationKey: ["createMint", "create", { cluster }],
+    mutationFn: async (args: CreateMintArgs) => {
+      const mintPubkey = await createMint(connection, payer, args.mintAuthority, args.freezeAuthority, 9)
+      return mintPubkey.toBase58()
+    },
+    onSuccess: (mintAddress) => {
+      transactionToast(mintAddress)
+    },
+    onError: (error) => {
+      transactionToast(error.message)
+    }
+  })
+
+  const mintTokens = useMutation<string, Error, MintTokenArgs>({
+    mutationKey: ["mintTokens"],
+    mutationFn: async ({ mint, destination, amount }: MintTokenArgs) => {
+      const signature = await mintTo(
         connection,
         payer,
-        mintAuthority.publicKey,
-        freezeAuthority.publicKey,
-        9
-      );
+        mint,
+        destination,
+        payer,
+        amount
+      )
+      return signature
     },
     onSuccess: (signature) => {
-      transactionToast(signature);
+      transactionToast(`Tokens Minted! TX: ${signature}`)
     },
-    onError: () => toast.error('Failed to run program'),
-  });
+    onError: (error) => {
+      transactionToast(`Minting Failed: ${error.message}`)
+    }
+  })
 
   return {
-    programId,
-    getProgramAccount,
-    createMint
+    createMintAccount,
+    mintTokens
   }
-};
+}
+
+
+
+

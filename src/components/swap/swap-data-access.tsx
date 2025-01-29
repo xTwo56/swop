@@ -21,9 +21,9 @@ export function useSwapProgram() {
     queryFn: () => connection.getParsedAccountInfo(programId),
   });
 
-  const greet = useMutation({
-    mutationKey: ['basic', 'greet', { cluster }],
-    mutationFn: () => program.methods.greet().rpc(),
+  const makeOffer = useMutation({
+    mutationKey: ['swap', 'make-offer', { cluster }],
+    mutationFn: () => program.methods.makeOffer().rpc(),
     onSuccess: (signature) => {
       transactionToast(signature);
     },
@@ -34,6 +34,6 @@ export function useSwapProgram() {
     program,
     programId,
     getProgramAccount,
-    greet,
+    makeOffer,
   };
 }
