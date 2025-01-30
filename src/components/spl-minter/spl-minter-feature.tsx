@@ -5,7 +5,7 @@ import { ExplorerLink } from '../cluster/cluster-ui';
 import { WalletButton } from '../solana/solana-provider';
 import { AppHero, ellipsify } from '../ui/ui-layout';
 import { useSplMinter } from './spl-minter-data-access';
-import { CreateMint, MintTokens } from './spl-minter-ui';
+import { CreateATA, CreateMint, MintTokens } from './spl-minter-ui';
 
 export default function MinterFeature() {
   const { publicKey } = useWallet();
@@ -19,6 +19,7 @@ export default function MinterFeature() {
         <CreateMint />
       </AppHero>
       <MintTokens />
+      <CreateATA />
     </div>
   ) : (
     <div className="max-w-4xl mx-auto">

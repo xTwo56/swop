@@ -49,7 +49,8 @@ export function CreateMint() {
 export function MintTokens() {
 
   const { mintTokens } = useSplMinter()
-  const [mintAddress, setMintAddress] = useState<string>("")
+  const [mintAddress, setMintAdderess] = useState<string>("")
+  const [mintAuthorityAddress, setMintAuthorityAdderess] = useState<string>("")
   const [destinationAddress, setDestinationAddress] = useState<string>("")
   const [amount, setAmount] = useState(0)
   const { publicKey } = useWallet()
@@ -60,7 +61,8 @@ export function MintTokens() {
     if (publicKey && isFormValid) {
       const mint = new PublicKey(mintAddress)
       const destination = new PublicKey(destinationAddress)
-      mintTokens.mutateAsync({ mint, destination, amount })
+      const mintAuthority = new PublicKey(mintAuthorityAddress)
+      mintTokens.mutateAsync({ mint, destination, mintAuthority, amount })
     }
   }
 
@@ -73,9 +75,13 @@ export function MintTokens() {
     <div>
       <h2 className="">TokenTransfer</h2>
 
-      <input type="text" placeholder='MintAuthorityAddress' value={mintAddress}
+      <input type="text" placeholder='MintAddress' value={mintAddress}
         className='input input-bordered w-full max-w-xs'
-        onChange={(e) => setMintAddress(e.target.value)} />
+        onChange={(e) => setMintAdderess(e.target.value)} />
+
+      <input type="text" placeholder='MintAuthorityAddress' value={mintAuthorityAddress}
+        className='input input-bordered w-full max-w-xs'
+        onChange={(e) => setMintAuthorityAdderess(e.target.value)} />
 
       <input placeholder='destinationAddress' value={destinationAddress}
         className='input input-bordered w-full max-w-xs'
@@ -92,3 +98,45 @@ export function MintTokens() {
     </div>
   )
 }
+
+export function CreateATA() {
+  const { createATA } = useSplMinter()
+  const [mintAddress, setMintAdderess] = useState<string>("")
+  const [destinationAddress, setDestinationAddress] = useState<string>("")
+  const { publicKey } = useWallet()
+
+  const isFormValid = mintAddress.trim() && destinationAddress.trim();
+
+  const handleSumbit = () => {
+    if (publicKey && isFormValid) {
+      const mint = new PublicKey(mintAddress)
+      const destination = new PublicKey(destinationAddress)
+      createATA.mutateAsync({ mint, destination })
+    }
+  }
+
+  if (!publicKey) {
+    return (
+      <p>Connect your wallet</p>
+    )
+  }
+  return (
+    <div>
+      <h2 className="">CreateATA</h2>
+
+      <input type="text" placeholder='MintAddress' value={mintAddress}
+        className='input input-bordered w-full max-w-xs'
+        onChange={(e) => setMintAdderess(e.target.value)} />
+
+      <input placeholder='destinationAddress' value={destinationAddress}
+        className='input input-bordered w-full max-w-xs'
+        onChange={(e) => setDestinationAddress(e.target.value)} />
+
+      <button onClick={handleSumbit}
+        disabled={createATA.isPending || !isFormValid}
+        className='btn btn-xs lg: btn-md btn-primary' />
+
+    </div>
+  )
+}
+
